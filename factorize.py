@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue, cpu_count
+from multiprocessing import Process, Queue, Semaphore, cpu_count
 from time import time
 
 
@@ -15,21 +15,22 @@ def factorize(*number):
 
 
 # мультипроцесорна версія
-def factor(x, queue):
+def factor(x, queue, semaphore):
     dividers = []
-    for y in range(1, x + 1):
-        if x % y == 0:
-            dividers.append(y)
-    queue.put(dividers)
+    with semaphore:
+        for y in range(1, x + 1):
+            if x % y == 0:
+                dividers.append(y)
+        queue.put(dividers)
 
 
 def factorize_proc(*numbers):
     processes = []
     queue = Queue()
-    n = cpu_count()
+    semaphore = Semaphore(cpu_count())
     # припущення: кількість вхідних значень дорівнює кількості ядер процесора
-    for i in range(n):
-        process = Process(target=factor, args=(numbers[i], queue))
+    for number in numbers:
+        process = Process(target=factor, args=(number, queue, semaphore))
         processes.append(process)
         process.start()
     for process in processes:
