@@ -28,7 +28,6 @@ def factorize_proc(*numbers):
     processes = []
     queue = Queue()
     semaphore = Semaphore(cpu_count())
-    # припущення: кількість вхідних значень дорівнює кількості ядер процесора
     for number in numbers:
         process = Process(target=factor, args=(number, queue, semaphore))
         processes.append(process)
